@@ -148,10 +148,17 @@ import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/exampl
             const index = Math.floor(t/80) % meshes.length;
           console.log("index -> "+index);
           console.log("meshes.length -> "+meshes.length);
-          if(index==meshes.length && meshes.length!=189)
-          replay = 0;
-          else
-          replay = 1;
+          if(index==meshes.length && meshes.length!=189){
+            replay = 0;
+            console.log("replay sifir oldu");
+
+          }
+         
+          else{
+            console.log("replay hala 1 ");
+            replay = 1;
+          }
+        
 
 
           if (currentIndex !== index) {
