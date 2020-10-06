@@ -77,6 +77,7 @@ import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/exampl
       var bar = 0;
       var replay = 1;
       var replayFlag = 0;
+      var createIndex = 0;
 
       function init() {
       
@@ -141,22 +142,28 @@ import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/exampl
       function animate() {
         
         requestAnimationFrame( function render(t) {
-          const index = Math.floor(t/80) % meshes.length;
+
+
+          if(createIndex==1){
+            const index = Math.floor(t/80) % meshes.length;
           console.log("index -> "+index);
           console.log("meshes.length -> "+meshes.length);
-          // if( index==meshes.length-1 && meshes.length!=190){
-          //   replay = 0;
-          //   console.log("replay sıfır oldu")
-          // } 
-          
+          if(index==meshes.length && meshes.length!=189)
+          replay = 0;
+          else
+          replay = 1;
+
+
           if (currentIndex !== index) {
-            if(flag==1 && numberContainer>10){
+            if(flag==1 && numberContainer>10 && replay==1){
             scene.remove(meshes[currentIndex]);
             scene.add(meshes[index])
             currentIndex = index;
-            }
-            
-            }
+            } }
+          }
+
+        
+
             controls.update();
             camera.lookAt(cameraTarget);
             renderer.render(scene, camera);
@@ -177,6 +184,13 @@ import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/exampl
           replay = 1;
           return; 
         }    
+
+        if(numberContainer>10){
+          createIndex = 1;
+        }    
+
+
+
         fetch(url)
         .then(response => response.blob())
         .then(data =>  {  
