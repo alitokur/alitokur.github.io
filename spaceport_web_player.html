@@ -37,7 +37,6 @@
   var bar1 = new ldBar("#myItem1");
   /* ldBar stored in the element */
   var bar2 = document.getElementById('myItem1').ldBar;
-  bar1.set(60);
 </script>
     
 
@@ -144,7 +143,7 @@ import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/exampl
           const index = Math.floor(t/80) % meshes.length;
           console.log("index -> "+index);
           console.log("meshes.length -> "+meshes.length);
-          if(numberContainer>10 && index==meshes.length-1 && meshes.length!=190){
+          if( index==meshes.length-1 && meshes.length!=190){
             replay = 0;
             console.log("replay sıfır oldu")
           } 
