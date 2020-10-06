@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+		<title>  Spaceport Volumetric Web Player</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="./main.css">
+    <link rel="stylesheet" type="text/css" href="loading-bar.css"/>
+<script type="text/javascript" src="loading-bar.js"></script>
+		<style>
+			body {
+				color: #222;
+			}
+
+			a {
+				color: #2fa1d6;
+			}
+
+			p {
+				max-width: 600px;
+				margin-left: auto;
+				margin-right: auto;
+				padding: 0 2em;
+			}
+		</style>
+  </head>
+
+
+  
+  <body>
+    <div id="myItem1"
+    data-preset="energy"
+    style="width:200px;height:150px"
+    ></div>
+    <script>
+  /* construct manually */
+  var bar1 = new ldBar("#myItem1");
+  /* ldBar stored in the element */
+  var bar2 = document.getElementById('myItem1').ldBar;
+  bar1.set(60);
+</script>
+    
+
+
+
+
+		<div id="info">
+			<a href="https://spaceport.tv/" target="_blank" rel="noopener">Spaceport</a> Volumetric Web Video Player<br />
+			<p>
+				Spaceport, next-generation video technology, is an end-to-end Volumetric Video Capturing and Streaming solution. Compatible with mobile devices, browsers, and VR goggles.
+			</p>
+			Developed by
+			<a href="https://antmedia.io/" target="_blank" rel="noopener">Ant Media</a>.<br />
+		</div>
+
+
+    <script type="module">
+
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.121.1/build/three.module.js';
+import { DRACOLoader } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/loaders/DRACOLoader.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
+        
+      // Configure decoder and create loader.
+      var textureLoader = new THREE.TextureLoader();
+      const loadManager = new THREE.LoadingManager();
+      
+          
+      const meshes = [];
+      const allTextures  = [];
+      const allMaterials = [];
+      const drcMeshes = [];
+    
+  
+      var camera, cameraTarget, scene, renderer, controls;
+      let currentIndex = null;
+      var flag=0;
+      var numberContainer=1;
+      var bar = 0;
+      var replay = 1;
+
+      function init() {
+      
+        var container = document.createElement('div');
+        document.body.appendChild(container);
+
+        //camera
+        camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 15);
+        camera.position.set(3, 0.15, 3);
+        cameraTarget = new THREE.Vector3(0, 0, 0);
+
+        //scene
+        scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0x72645b, 2, 15);
+
+
+        // Ground
+        var plane = new THREE.Mesh(
+        new THREE.PlaneBufferGeometry(40, 40),
+        new THREE.MeshPhongMaterial({color: 0x999999, specular: 0x101010}));
+        plane.rotation.x = -Math.PI/2;
+        plane.position.y = -0.5;
+        scene.add(plane);
+        plane.receiveShadow = true;
+
+        // Lights
+        scene.add(new THREE.HemisphereLight(0x443333, 0x111122));
+        addShadowedLight(1, 1, 1, 0xffffff, 1.35);
+        addShadowedLight(0.5, 1, -1, 0xffaa00, 1);
+
+        // renderer
+        renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setClearColor(scene.fog.color);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
+        window.addEventListener('resize', onWindowResize, false);
+        
+        // controls
+        controls = new OrbitControls( camera, renderer.domElement );
+        controls.enableDamping = true; 
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 2;
+        controls.maxDistance = 7;
+        controls.maxPolarAngle = Math.PI/2;
+
+      }
+
+      function addShadowedLight(x, y, z, color, intensity) {
+        var directionalLight = new THREE.DirectionalLight(color, intensity);
+        directionalLight.position.set(x, y, z);
+        scene.add(directionalLight);
+      }
+
+      function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+
+      function animate() {
+        
+        requestAnimationFrame( function render(t) {
+          const index = Math.floor(t/80) % meshes.length;
+          console.log("index -> "+index);
+          console.log("meshes.length -> "+meshes.length);
+          if(numberContainer>10 && index==meshes.length-1 && meshes.length!=190){
+            replay = 0;
+            console.log("replay sıfır oldu")
+          } 
+          // if(controlReplay==1 && index==189)
+          // var replay = 1;
+          // else replay = 0;
+          // console.log(replay);
+          console.log(replay);
+          if (currentIndex !== index) {
+            if(flag==1 && numberContainer>10 && replay==1){
+            scene.remove(meshes[currentIndex]);
+            scene.add(meshes[index])
+            currentIndex = index;
+            }
+            
+            }
+            controls.update();
+            camera.lookAt(cameraTarget);
+            renderer.render(scene, camera);
+            requestAnimationFrame(render);
+            
+            
+
+            });
+            }
+      window.onload = function() {
+        //get spaceport containers
+        function loadNextContainer(){
+         
+        //var url = "sample_videos/container_"
+        var url ="https://github.com/ant-media/spaceport-web-player/tree/master/sample_videos/container_"+numberContainer; 
+        if(numberContainer>19) return;    
+        fetch(url)
+        .then(response => response.blob())
+        .then(data =>  {  
+            var reader = new FileReader();
+             reader.onload = function(e) {
+
+            var offset = 40;           
+            var frameCount = reader.result.slice(offset,offset+8);
+            var byteArray = new BigUint64Array(frameCount);
+            var frameNumber = Number(byteArray[0]);
+            offset=offset+8;
+            var i;
+            for (i = 0; i <frameNumber ; i++) {
+              var timeStamp = reader.result.slice(offset,offset+8);
+              var byteArray = new BigUint64Array(timeStamp);
+              offset=offset+8;
+              var framePosition = reader.result.slice(offset,offset+8);
+              var byteArray = new BigUint64Array(framePosition);
+              offset=offset+8; 
+            }
+               var i;
+            for (i = 0; i <frameNumber ; i++) {
+              if(bar<100){
+              bar++;
+             bar1.set(bar);
+             }
+             if(bar==100){
+              document.getElementById("myItem1").setAttribute("hidden","");
+              bar1.set(0);
+              //document.getElementById("myItem1").removeAttribute("hidden");
+             }
+
+              var dracoSize = reader.result.slice(offset,offset+8);
+              var byteArray = new BigUint64Array(dracoSize);
+              var myNumber = Number(byteArray[0]);
+              offset=offset+8;
+              var drcMesh = reader.result.slice(offset,offset+myNumber);
+              drcMeshes.push(drcMesh);
+              offset=offset+myNumber;
+              var mtl = reader.result.slice(offset,offset+8);
+              offset=offset+8;
+              var byteArray = new BigUint64Array(mtl);       
+              var myNumber = Number(byteArray[0]);
+              offset = offset+myNumber;
+           
+              var jpgSize = reader.result.slice(offset,offset+8);
+              offset=offset+8;
+              var jpgSizeView = new Float64Array(jpgSize);
+              var byteArray = new BigUint64Array(jpgSize);
+              var myNumber = Number(byteArray[0]);
+              
+              var newTexture =  reader.result.slice(offset,offset+myNumber); 
+              var textureView = new Uint8Array(newTexture);
+              offset=offset+myNumber;
+              
+              var imageBlob = new Blob([textureView.buffer], {type: "image/jpg"});
+              var url = URL.createObjectURL(imageBlob);
+              allTextures.push(url);      
+              }
+               const loader = new THREE.TextureLoader(loadManager);
+               for(var foo=0;foo<frameNumber;foo++){
+                 var material = new THREE.MeshBasicMaterial({map: loader.load(allTextures[foo])});
+                 allMaterials.push(material);   
+                 }
+                 loadManager.onLoad = () => {
+                   var index = 0;
+                   var dracoLoader = new DRACOLoader();
+                   dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+                   function loadNextFile(){
+                     if(index>drcMeshes.length-1){
+                      flag=1;
+                      allMaterials.length=0;
+                      allTextures.length = 0;
+                      drcMeshes.length = 0;
+                      numberContainer++;
+                      replay = 1;
+                     loadNextContainer();
+                      return;
+                     } 
+                     dracoLoader.decodeDracoFile(drcMeshes[index],function(bufferGeometry){
+                        var geometry;
+                        geometry = new THREE.Mesh(bufferGeometry, allMaterials[index]);
+                        geometry.rotation.z = Math.PI;
+                        var scale = 0.5;
+            //**********************************************
+             geometry.scale.multiplyScalar(scale);
+             geometry.position.x = 0.06;     
+             geometry.position.y = 0.4;
+             geometry.position.z = -0.7; 
+             geometry.castShadow = true;
+             geometry.receiveShadow = true;
+            //**********************************************
+            meshes.push(geometry);
+            index++;
+            loadNextFile();
+            });
+        }
+        loadNextFile();
+        };
+
+          }
+             reader.readAsArrayBuffer(data);
+         })
+        .catch((error) => {
+           console.error('Error:', error);
+           });   
+            }
+
+       init();
+       animate();
+       loadNextContainer();
+      }
+    </script>
+
+</html>
