@@ -152,7 +152,8 @@ import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/exampl
       window.onload = function() {
         //get spaceport containers
         function loadNextContainer(){
-         var url = "http://192.168.56.1:8080/audios/audio_file_part"+numberContainer;
+         var url = "audios/audio_file_part"+numberContainer;
+       
         // var url = "sample_videos/container_"+ numberContainer; 
        // var url ="https://github.com/ant-media/spaceport-web-player/tree/master/sample_videos/container_"+numberContainer; 
         if(numberContainer>2){
@@ -161,6 +162,7 @@ import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/exampl
         fetch(url)
         .then(response => response.blob())
         .then(data =>  {  
+          console.log(url);
             var reader = new FileReader();
              reader.onload = function(e) {
 
