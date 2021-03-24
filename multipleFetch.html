@@ -1,0 +1,55 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>multiple fetch test</title>
+    <script>
+        console.log("before the fetch");
+        var urls = new Array("sample_videos/container0", "sample_videos/container1", "sample_videos/container2", 
+        "sample_videos/container3", "sample_videos/container4", "sample_videos/container5","sample_videos/container6");
+        fetchSimultaneously(urls);
+
+
+
+
+    async function fetchSimultaneously(urls) {
+        console.log("im here")
+    const queue = urls;
+    const maxSimultaneouslyRequests = 4;
+    let currentRequests = 0;
+    let i = 0;
+
+    return await new Promise(resolve => {
+        const result = [];
+
+        const fetcher = setInterval(async () => {
+            if (queue.filter(url => url).length === 0) {
+                clearInterval(fetcher);
+                resolve(result);
+            }
+
+            if (currentRequests >= maxSimultaneouslyRequests || i > queue.length - 1) {
+                return;
+            }
+
+            // Get current index and increase i
+            const index = i++;
+            const url = queue[index];
+            console.log(url);
+            currentRequests++;
+            // Keep same index as of the passed urls array
+            result[index] = await (await fetch(url).then(response => response.blob()));
+            currentRequests--;
+            console.log(result[index]);
+
+            // Set value of index to empty (undefined)
+            delete queue[index];
+        }, 100);
+    });
+}
+    </script>
+</head>
+
+<body>
+    
+</body>
+</html>
