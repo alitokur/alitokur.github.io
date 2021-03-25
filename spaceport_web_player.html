@@ -212,7 +212,7 @@
 						} );
         function loadNextContainer(){ 
         var url = "sample_videos/container" + numberContainer; 
-        if(numberContainer>399){
+        if(numberContainer>99){
           return; 
         }    
         if(numberContainer>10){
@@ -226,7 +226,7 @@
             var offset = 40;           
             var i;
             for (i = 0; i <frameNumber ; i++) {
-              //console.log("frame - | "+ ccc)
+              console.log("frame - | "+ ccc)
               ccc++;
               if(bar<100){
               bar=bar+0.25;
