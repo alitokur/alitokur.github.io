@@ -16,6 +16,7 @@
 
     async function fetchSimultaneously(urls) {
         console.log("im here")
+        startTime = new Date();
     const queue = urls;
     const maxSimultaneouslyRequests = 20;
     let currentRequests = 0;
@@ -49,6 +50,16 @@
         }, 100);
     });
 }
+
+endTime = new Date();
+var timeDiff = endTime - startTime; //in ms
+  // strip the ms
+  timeDiff /= 1000;
+
+  // get seconds 
+  var seconds = Math.round(timeDiff);
+  console.log(seconds + " seconds");
+
     </script>
 </head>
 
