@@ -3,15 +3,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>multiple fetch test</title>
     <script>
-        console.log("before the fetch!!");
-        var urls = [];
-        for (var i =0; i<100; i++)
-        urls.push("sample_videos/container"+i);
-
-        console.log(urls.length)
-
-        // var urls = new Array("sample_videos/container0", "sample_videos/container1", "sample_videos/container2", 
-        // "sample_videos/container3", "sample_videos/container4", "sample_videos/container5","sample_videos/container6");
+        console.log("before the fetch");
+        var urls = new Array("sample_videos/container0", "sample_videos/container1", "sample_videos/container2", 
+        "sample_videos/container3", "sample_videos/container4", "sample_videos/container5","sample_videos/container6");
         fetchSimultaneously(urls);
 
 
@@ -20,7 +14,7 @@
     async function fetchSimultaneously(urls) {
         console.log("im here")
     const queue = urls;
-    const maxSimultaneouslyRequests = 25;
+    const maxSimultaneouslyRequests = 4;
     let currentRequests = 0;
     let i = 0;
 
