@@ -22,10 +22,6 @@ button {
 	text-transform: uppercase;
 }
 
-canvas {
-	display: block;
-}
-
 #info {
 	position: absolute;
 	top: 0px;
@@ -55,6 +51,7 @@ a, button, input, select {
 
 #overlay {
 	position: absolute;
+	font-size: 16px;
 	z-index: 2;
 	top: 0;
 	left: 0;
@@ -63,14 +60,17 @@ a, button, input, select {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	flex-direction: column;
 	background: rgba(0,0,0,0.7);
 }
 
 	#overlay button {
-		background: #ffffff;
+		background: transparent;
 		border: 0;
-		color: #000000;
-		padding: 16px 20px;
+		border: 1px solid rgb(255, 255, 255);
+		border-radius: 4px;
+		color: #ffffff;
+		padding: 12px 18px;
 		text-transform: uppercase;
 		cursor: pointer;
 	}
@@ -81,165 +81,4 @@ a, button, input, select {
 	background-color: #f00;
 	margin-top: 20px;
 	padding: 10px;
-}
-
-
-
-svg#play {
-	width:200px;
-	margin: 0;
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	cursor: pointer;
-	transform-origin: 50% 50%;
-  }
-  
-  svg#play #triangle {
-	fill:rgba(22,22,22,0);
-	transition:500ms;
-	transform-origin: 50% 50%;
-  }
-  svg#play:hover #triangle {
-	fill:#cd3a3a;
-	transform-origin: 50% 50%;
-  }
-  
-   svg #lineOne, svg #lineTwo {
-	transform-origin: 50% 50%;
-	transition: 1s;
-  } 
-  
-   svg:hover #lineOne {
-	transform: rotate(260deg);
-	 -webkit-transform: rotate(260deg);
-  -moz-transform: rotate(260deg);
-  -o-transform: rotate(260deg);
-	 transform-origin: 50% 50%;
-  } 
-  
-   svg:hover #lineTwo {
-	transform: rotate(-450deg);
-	 transform-origin: 50% 50%;
-  } 
-
-
-
-  .ldBar {
-	position: absolute;
-	left: 50%;
-	top: 50%;
-	width: 500px;
-	height: auto;
-	text-align: center;
-	transform: translate(-50%,-50%);
-  }
-  
-  .ldBar.label-center > .ldBar-label {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	-webkit-transform: translate(-50%, -50%);
-	transform: translate(-50%, -50%);
-	text-shadow: 0 0 3px #fff;
-  }
-  
-  .ldBar-label:after {
-	content: "%";
-	display: inline;
-  }
-  
-  .ldBar.no-percent .ldBar-label:after {
-	content: "";
-  }
-  
-  .round-button {
-	position: absolute;
-	left: 50%;
-	top: 50%;
-	width: 500px;
-	height: auto;
-	text-align: center;
-	transform: translate(-50%,-50%);
-	  box-sizing: border-box;
-	  display:block;
-	  width:80px;
-	  height:80px;
-	  padding-top: 14px;
-	  padding-left: 8px;
-	  line-height: 20px;
-	  border: 6px solid #fff;
-	  border-radius: 50%;
-	  color:#f5f5f5;
-	  text-align:center;
-	  text-decoration:none;
-	  background-color: rgba(0,0,0,0.5);
-	  font-size:20px;
-	  font-weight:bold;
-	  transition: all 0.3s ease;
-  }
-  .round-button:hover {
-	  background-color: rgba(0,0,0,0.8);
-	  box-shadow: 0px 0px 10px rgba(255,255,100,1);
-	  text-shadow: 0px 0px 10px rgba(255,255,100,1);
-  }
-
-
-
-  #player {
-	
-	position: absolute;
-	left: 50%;
-	
-	
-	top: 200px;
-	
-	i {
-		position: absolute;
-		margin-top: -6px;
-		color: #666;
-	}
-	
-	i.fa-volume-down {
-		margin-left: -8px;
-	}
-	
-	i.fa-volume-up {
-		margin-right: -8px;
-		right: 0;
-	}
-}
-
-#volume {
-	position: absolute;
-	left: -125px;
-	margin: 0 auto;
-	height: 5px;
-	width: 300px;
-	background: #555;
-	border-radius: 15px;
-	
-}
-
-.ui-slider-range-min {
-    height: 5px;
-    width: 300px;
-    position: absolute;
-    background: $primary-color;
-    border: none;
-    border-radius: 10px;
-  outline: none;
-}
-
-#volume .ui-slider-handle {
-    width: 20px;
-    height: 20px;
-    border-radius: 20px;
-    background: #222;
-    position: absolute;
-    margin-left: -8px;
-    margin-top: -8px;
-    cursor: pointer;
-    outline: none;
 }
