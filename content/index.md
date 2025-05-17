@@ -4,14 +4,17 @@ title: badcode
 
 ### [[index|alitokur dot com]]
 
-hola! i'm [[index|badcode]] --  c++ developer 
 
-like to write about programming, tech, and other stuff.
+hola! i'm  [[index|badcode]]— a C++ developer building low-latency systems for algorithmic trading.
+
+i like to write about compilers, performance tuning, trading infra, and whatever else breaks at 2 a.m. (no Knight Capital vibes, hopefully).
+
+---
 
 
 #### posts 
 
-2025-05-16 :: [[compiler-optimization |compiler optimization]]
+2025-05-16 :: [[compiler-optimization | compiler optimization]]
 
 
 #### links
