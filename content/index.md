@@ -14,7 +14,10 @@ i like to write about compilers, performance tuning, trading infra, and whatever
 
 #### posts 
 
-2025-05-16 :: [[compiler-optimization | compiler optimization]]
+
+2025-05-16 :: [[i-use-vim-btw| i use vim btw]]
+
+2025-05-17 :: [[compiler-optimization | compiler optimization (upcoming)]]
 
 
 #### links
