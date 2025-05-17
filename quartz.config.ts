@@ -20,6 +20,8 @@ const config: QuartzConfig = {
     ignorePatterns: ["private", "templates", ".obsidian"],
     defaultDateType: "modified",
     theme: {
+      fontOrigin: "googleFonts",
+      cdnCaching: true,
       typography: {
         header: "JetBrains Mono",
         body: "JetBrains Mono",
@@ -39,14 +41,13 @@ const config: QuartzConfig = {
         },
         darkMode: {
           light: "#161618",
-          lightgray: "#393639",
-          gray: "#646464",
-          darkgray: "#d4d4d4",
-          dark: "#ebebec",
-          secondary: "#d446d4",
-          tertiary: "#84a59d",
+          lightgray: "#6c7086",
+          gray: "#1e1e2e",
+          darkgray: "#b1b1b1",
+          dark: "#f8f8f2",
+          secondary: "#bd93f9",
+          tertiary: "#45475a",
           highlight: "rgba(0, 0, 0, 0)",
-          textHighlight: "#b3aa0288",
         },
       },
     },
@@ -56,7 +57,7 @@ const config: QuartzConfig = {
       Plugin.FrontMatter(),
       Plugin.SyntaxHighlighting({
         theme: {
-          light: "github-dark",
+          light: "github-light",
           dark: "dracula",
         },
         keepBackground: false,
@@ -72,7 +73,7 @@ const config: QuartzConfig = {
     filters: [Plugin.RemoveDrafts()],
     emitters: [
       Plugin.AliasRedirects(),
-      Plugin.ComponentResources({ fontOrigin: "googleFonts" }),
+      Plugin.ComponentResources(),
       Plugin.ContentPage(),
       Plugin.FolderPage(),
       Plugin.TagPage(),
@@ -85,7 +86,8 @@ const config: QuartzConfig = {
       Plugin.Favicon(),
       Plugin.NotFoundPage(),
       // Comment out CustomOgImages to speed up build time
-      Plugin.CustomOgImages(),
+      Plugin.CustomOgImages({
+      colorScheme: "darkMode"}),
     ],
   },
 }
