@@ -5,24 +5,36 @@ title: inline or not
 ### [[index|alitokur dot com]]
 
 <h1>
-    should you use inline?
+    should you use inline in C++?
 </h1>
 
 
-Do you think about the overhead of a function on some long nights, or are you just normal.
-This night will be different my friends. This night we gonna crack some cpp codes
-then we are going to talk about some things that people don't usually want to discuss. 
-And then we'll decide: **should we use inline or not?**
+Ever find yourself thinking about  the overhead of a function on those long
+nights, or are you one of the normal ones? Tonight we're cracking **"inline"**
+while we are listening [Pilli
+Bebek](https://open.spotify.com/track/0LK1eyxnHTeTgDAXl02G0s?si=018dfddeef7b47d7),
+and we are going to talk about some things that people don't usually like to
+discuss. By the end of the night, when the first light of dawn hits the screen,
+we'll make our choice: **should we use inline or not in C++?**
 
+If you are here, you probably done all your search about inlining,
+stackoverflow, chatgpt, reddit... and already know what **inline** functions are.
+Just a quick reminder: when we declare a function as inline, we are trying to
+reduce the overhead of a function call, by placing the function's code directly
+at the call site. And this overhead... Huh, might have heard a story going
+like this: A function call has overhead, because the program jumps to the
+memory location where your function code starts, it needs to save the current
+cursor position into the stack, then arguments are being pushed to the stack,
+then they are taken from the stack, then a result is written, then 3 apples bla
+bla... These are not secret most of time true but modern compilers and CPUs
+are incredibly smart when optimizing these operations. 
 
-Here is a quote from [Optimizing Software in C++](https://www.agner.org/optimize/optimizing_cpp.pdf):
+Now, there is no need, but let's write a simple function that sums two integers
+inside a loop, and measure the performance difference between inline and
+non-inline versions.
 
-> The function call makes the microprocessor jump to different code address and back again. This may take
-up to 4 clock cycles. In most cases, the microprocessor is able to overlap the call and retrn operations
-with other calculations to save time.
-
-Here is a simple example of a function compiled with the flags: 
-**-O2 -masm=intel**
+> [!NOTE]
+> flags: **-O2**
 
 
 ```cpp
@@ -39,9 +51,12 @@ int main (int argc, char *argv[]) {
     return 0;
  ```
 
-I know, I can use -O0 to disable inlining, but I'd like to keep things closer to
-production setup. So instead of turning off optimization, i will use **__attribute__((noinline))**.
-And don't worry this ugly **volatile** here, it just to prevent constant folding.
+I know I could use -O0 to disable inlining, but instead of turning off
+optimizations, I’ll keep -O2 and add **__attribute__((noinline))** to block
+inlining explicitly. The reason I’m using -O2 here is to show— as you’ll see
+later— that the compiler already does most of the heavy lifting for us. And
+don’t worry about the ugly volatile.It’s just there to stop the compiler from
+optimizing the result away.
 
 ```asm
 sum(int, int):
@@ -65,16 +80,25 @@ main:
         add     rsp, 16
         pop     rbx
         ret
-
-sum(int, int):
-        lea     eax, [rdi + rsi]
-        ret
 ```
-  
-without inline it should be something like that:
+**perf** output for non-inlined version:
+
+```bash
+       54.270.085      cycles                                                                
+       93.856.882      instructions      #    1,73  insn per cycle            
+       30.751.057      branches                                                              
+
+       0,012193552 seconds time elapsed
+```
+As you can see, main function has this magical **call** instruction.
+
+- ~3 branches/iter makes sense: loop back-edge + call + ret are all counted as
+branches.
+- Extra instructions are the call/return and arg setup.
+
+And now let compiler make its magic with inline.
 
 ```asm
-
 sum(int, int):
         lea     eax, [rdi + rsi]
         ret
@@ -88,61 +112,220 @@ main:
         add     ecx, -16
         mov     dword ptr [rsp - 4], ecx
         mov     ecx, dword ptr [rsp - 4]
-        lea     ecx, [rax + rcx - 14]
-        mov     dword ptr [rsp - 4], ecx
-        mov     ecx, dword ptr [rsp - 4]
-        lea     ecx, [rax + rcx - 12]
-        mov     dword ptr [rsp - 4], ecx
-        mov     ecx, dword ptr [rsp - 4]
-        lea     ecx, [rax + rcx - 10]
-        mov     dword ptr [rsp - 4], ecx
-        mov     ecx, dword ptr [rsp - 4]
-        lea     ecx, [rax + rcx - 8]
-        mov     dword ptr [rsp - 4], ecx
-        mov     ecx, dword ptr [rsp - 4]
-        lea     ecx, [rax + rcx - 6]
-        mov     dword ptr [rsp - 4], ecx
-        mov     ecx, dword ptr [rsp - 4]
-        lea     ecx, [rax + rcx - 4]
-        mov     dword ptr [rsp - 4], ecx
-        mov     ecx, dword ptr [rsp - 4]
-        add     ecx, eax
-        add     ecx, -2
-        mov     dword ptr [rsp - 4], ecx
-        add     dword ptr [rsp - 4], eax
-        add     eax, 18
-        cmp     eax, 20000015
-        jne     .LBB1_1
-        xor     eax, eax
+        ...      #   more operations
         ret
 
 ```
-
-End then lets check the perf results:
-
+- Huge drop in cycles and instructions: the call/ret disappeared.
 ```bash
-        54.270.085      cycles                                                                
-        93.856.882      instructions                     #    1,73  insn per cycle            
-        30.751.057      branches                                                              
-            62.489      branch-misses                    #    0,20% of all branches           
-
-       0,012193552 seconds time elapsed
-
-       0,012213000 seconds user
-       0,000000000 seconds sys
-```
-
-And this is for inline:
-
-```bash
-        14.141.612      cycles                                                                
-        38.742.668      instructions                     #    2,74  insn per cycle            
-         1.977.227      branches                                                              
-            60.926      branch-misses                    #    3,08% of all branches           
+       14.141.612      cycles                                                                
+       38.742.668      instructions      #    2,74  insn per cycle            
+       1.977.227       branches                                                              
 
        0,003771016 seconds time elapsed
-
-       0,003803000 seconds user
-       0,000000000 seconds sys
-
 ```
+We have many more operations, and that means much more cycles.
+
+```bash
+Δcycles ≈ 54.270.085 - 14.141.612 = 40.128.473 cycles
+Total Iterations = 9,999,999
+≈ 4.012 cycles per call
+```
+
+That lands right in what: [Agner Fog
+says:](https://www.agner.org/optimize/optimizing_cpp.pdf)
+
+> The function call makes the microprocessor jump to different code address 
+and back again. This may take up to 4 clock cycles.
+
+Well, i think we have a clear and basic understanding what is our problem. And
+here comes most asked question: **"If inline is such a wonderfull optimization tool
+why do not we just make every function inline?** The answer is simple and you
+probably know that: **it us just a hint**. Compiler is absolutely free to ignore
+it. And some cases it wont care at all such as:
+
+- Recursive functions
+- Virtual functions
+- When the function is too big. i know, i know, you are asking, "what is the
+  big?" But believe me, i have no idea. Its completely compiler depented.
+- If multiple inline are nested. Ex: inline Foo call inline Far, and inline
+  Far calls inline Tar, etc. There are depth limits in such cases.
+
+Well, of course every compiler have some different behave for this cases. And
+no one, not me, not Herb Sutter, not anyone can give a full guarantee. But that
+does not mean, our inline keyword is meaningless. That would be completely
+wrong. For compilers it still has meaning. I read a great article by [Sy
+Brand](https://tartanllama.xyz/posts/inline-hints/), and you really should
+check it. In a nutshell:
+
+```cpp
+ // Adjust the threshold based on inlinehint attribute and profile based
+  // hotness information if the caller does not have MinSize attribute.
+  if (!Caller->hasMinSize()) {
+    if (Callee.hasFnAttribute(Attribute::InlineHint))
+      Threshold = MaxIfValid(Threshold, Params.HintThreshold);
+ 
+    // FIXME: After switching to the new passmanager, simplify the logic below
+    // by checking only the callsite hotness/coldness as we will reliably
+    // have local profile information.
+    //
+    // Callsite hotness and coldness can be determined if sample profile is
+    // used (which adds hotness metadata to calls) or if caller's
+    // BlockFrequencyInfo is available.
+    BlockFrequencyInfo *CallerBFI = GetBFI ? &(GetBFI(*Caller)) : nullptr;
+    auto HotCallSiteThreshold = getHotCallSiteThreshold(Call, CallerBFI);
+    if (!Caller->hasOptSize() && HotCallSiteThreshold) {
+      LLVM_DEBUG(dbgs() << "Hot callsite.\n");
+      // FIXME: This should update the threshold only if it exceeds the
+      // current threshold, but AutoFDO + ThinLTO currently relies on this
+      // behavior to prevent inlining of hot callsites during ThinLTO
+      // compile phase.
+      Threshold = *HotCallSiteThreshold;
+    } else if (isColdCallSite(Call, CallerBFI)) {
+      LLVM_DEBUG(dbgs() << "Cold callsite.\n");
+      // Do not apply bonuses for a cold callsite including the
+      // LastCallToStatic bonus. While this bonus might result in code size
+      // reduction, it can cause the size of a non-cold caller to increase
+      // preventing it from being inlined.
+      DisallowAllBonuses();
+      Threshold = MinIfValid(Threshold, Params.ColdCallSiteThreshold);
+    } else if (PSI) {
+      // Use callee's global profile information only if we have no way of
+      // determining this via callsite information.
+      if (PSI->isFunctionEntryHot(&Callee)) {
+        LLVM_DEBUG(dbgs() << "Hot callee.\n");
+        // If callsite hotness can not be determined, we may still know
+        // that the callee is hot and treat it as a weaker hint for threshold
+        // increase.
+        Threshold = MaxIfValid(Threshold, Params.HintThreshold);
+      } else if (PSI->isFunctionEntryCold(&Callee)) {
+        LLVM_DEBUG(dbgs() << "Cold callee.\n");
+        // Do not apply bonuses for a cold callee including the
+        // LastCallToStatic bonus. While this bonus might result in code size
+        // reduction, it can cause the size of a non-cold caller to increase
+        // preventing it from being inlined.
+        DisallowAllBonuses();
+        Threshold = MinIfValid(Threshold, Params.ColdThreshold);
+      }
+    }
+```
+
+So, the part I shared is bit different from what Sy Brand showed. LLVM's logic
+keeps growing. There are now extra checks for callsite hotness/coldness but I
+am not the right person to unpack all these cool things. What matters here is
+that Clang still looking for your inline keyword,right here:
+
+```cpp
+ if (Callee.hasFnAttribute(Attribute::InlineHint))
+      Threshold = MaxIfValid(Threshold, Params.HintThreshold);
+```
+
+And and and, i want to show another cool trick that i saw from Jason Turner.
+Open Compiler Explorer and enable the Optimization Remarks panel.I created a
+simple sum function and here's wjat it showed:
+
+![Screenshot](https://github.com/alitokur/alitokur.github.io/blob/master/src/inline-or-not/ss/noinline.png?raw=true)
+
+See you that this tiny,smol, cost and threshold. It says that my function cost
+is 35, and the calculated threshold for it just 337. We are well below that
+limit so it says:, "no worries frinend, i inlined it for you". Then i added the
+**inline** keyword to my sum function.
+
+Here is the result:
+
+![Screenshot](https://github.com/alitokur/alitokur.github.io/blob/master/src/inline-or-not/ss/inline.png?raw=true)
+
+
+Can you see that? Cost is same(as expected). But the threshold changed. Holy
+Bjorn! This is how inline can affect the optimixer. Clang gives us a subtle but
+real advantage here. The all arguments claim that "inline has no effect on
+compilers" is just wrong. We can cleary say that it reacts to compiler
+optimizations, even if slightly.
+
+
+But, but, but... 
+Just because we can influence the compiler, does that mean we should use inline?
+You are welcome to new war. This is between inliners and non-inliners. You
+can pick your side after this article. 
+
+I want to share two different opinions from experts. First one is from
+C++ Core guideline:
+
+> Some optimizers are good at inlining without hints from the programmer, 
+but don’t rely on it. Measure! Over the last 40 years or so, we have been
+promised compilers that can inline better than humans without hints from
+humans. We are still waiting. Specifying inline (explicitly, or implicitly when
+writing member functions inside a class definition) encourages the compiler to
+do a better job.
+
+Yes, the final advice is to measure, but there’s a hint of skepticism here — as
+if even the experts feel that compilers aren’t always nailing it yet.
+
+And also cppreference says:
+
+> The intent of the inline specifier is to serve as a hint for the compiler to 
+perform optimizations, such as function inlining, which usually require the
+definition of a function to be visible at the call site. The compilers can (and
+usually do) ignore presence or absence of the inline specifier for the purpose
+of optimization.
+
+It seems cppreference is more on the side of "inline is just a hint, and
+compilers can ignore it". They don't seem to advocate strongly for using
+inline as a performance optimization tool.
+
+The other one is coming from Agner Fog, in his optimization manuals, also
+discusses inlining and he says:
+
+> A function is usually inlined if the inline keyword is used or
+if its body is defined inside a class definition. Inlining a function is advantageous if the
+function is small or if it is called only from one place in the program. Small
+functions are often inlined automatically by the compiler. On the other hand,
+the compiler may in some cases ignore a request for inlining a function if the
+inlining causes technical problems or performance problems.
+
+As i said before: The first argument is really arguable. As i show before
+compiler have some calculations and adding inline keyword not always will help
+you. And this small function threshold is completely compiler dependent.
+
+Here is my rock star Jason Turner's opinion. If you watch this video, [Jason
+Turner](https://www.youtube.com/watch?v=GldFtXZkgYo) says dont use inline for
+performance. Do not see inline as a performance tool. It's mainly linkage
+tool. Because compiler, made all kind of calculations eithout your input at
+all, and there is a good change that by modify this threshold you are actually
+doing something that will perform worse. The compiler has a pretty good reason
+for why it set the threshold this value. So they say its something that you
+should pretty much rely on you almost certaily dontw want to mess with this. 
+
+As i shared above, Sy Brand's article and the answer of most question in
+stackoverflow and reddit strongly suggest the measuments before deciding. And i
+think its the best way to keep balence between these two sides.
+
+**And my final thought**: I strongly believe that inline keyword is powerfull tool
+but i dont use it so much. I think deciding to use inline or not is not easy at
+first sight. So i start with no inline usage, and when i find a bottleneck in
+my code, i try to inline that and then measure. I have spoken.
+
+
+### Sources and further reading:
+I already shared some links above, and here are some more:
+
+- [A Deeper Look at Inline
+  Functions](https://accu.org/journals/overload/9/42/kelly_449/)
+- [Function Inlining in C++ | Modern Cpp Series Ep.
+  109](https://www.youtube.com/watch?v=c1jyS8h7MlU)
+- [Learncpp - Inline functions and
+  variables](https://www.learncpp.com/cpp-tutorial/inline-functions-and-variables/https://www.learncpp.com/cpp-tutorial/inline-functions-and-variables/)
+- [Inline functions in C++.What is the
+  point?](https://softwareengineering.stackexchange.com/questions/35432/inline-functions-in-c-whats-the-point)
+
+
+
+
+
+
+
+
+
+
+
+

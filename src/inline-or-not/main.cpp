@@ -1,4 +1,5 @@
 // __attribute__((noinline))
+inline
 int sum(int a, int b){
     return a + b;
 }
