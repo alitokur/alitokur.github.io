@@ -15,7 +15,7 @@ i design and build low-latency trading systems -- no knight capital vibes.
 #### posts 
 
 
-2025-10-07 :: [[inline-or-not | inline or not ? (work in progress)]]
+<!-- 2025-10-07 :: [[inline-or-not | inline or not ? (work in progress)]] -->
 
 <!-- 2025-05-16 :: [[i-use-vim-btw | i use vim btw (upcoming)]] -->
 
