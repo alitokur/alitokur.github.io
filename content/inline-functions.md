@@ -17,21 +17,25 @@ and we are going to talk about some things that people don't usually like to
 discuss. By the end of the night, when the first light of dawn hits the screen,
 we'll make our choice: **should we use inline or not in C++?**
 
-If you are here, you probably done all your search about inlining,
-stackoverflow, chatgpt, reddit... and already know what **inline** functions are.
-Just a quick reminder: when we declare a function as inline, we are trying to
-reduce the overhead of a function call, by placing the function's code directly
-at the call site. And this overhead... Huh, might have heard a story going
-like this: A function call has overhead, because the program jumps to the
+And please, please, please, do not forget, i'm not an expert, and writing all
+this for you is also a way for me to learn. So, if you find any mistakes, call
+me and i can kick your *ss.
+
+Okey, here we go. If you are here, you probably done all your search about
+inlining, stackoverflow, chatgpt, reddit... and already know what **inline**
+functions are. Btw, we are focusing on the performance aspect of it, not
+linkage. So let me give you just a tiny reminder: when we declare a function as
+inline, we are trying to reduce the overhead of a function call, by placing the
+function's code directly at the call site. And you all might have heard a story
+going like this: A function call has overhead, because the program jumps to the
 memory location where your function code starts, it needs to save the current
 cursor position into the stack, then arguments are being pushed to the stack,
 then they are taken from the stack, then a result is written, then 3 apples bla
-bla... These are not secret most of time true but modern compilers and CPUs
-are incredibly smart when optimizing these operations. 
+bla... 
 
 Now, there is no need, but let's write a simple function that sums two integers
 inside a loop, and measure the performance difference between inline and
-non-inline versions.
+non-inline versions to see that this story is true or not.
 
 > [!NOTE]
 > flags: **-O2**
@@ -99,9 +103,6 @@ branches.
 And now let compiler make its magic with inline.
 
 ```asm
-sum(int, int):
-        lea     eax, [rdi + rsi]
-        ret
 
 main:
         mov     dword ptr [rsp - 4], 0
@@ -127,9 +128,9 @@ main:
 We have many more operations, and that means much more cycles.
 
 ```bash
-Δcycles ≈ 54.270.085 - 14.141.612 = 40.128.473 cycles
-Total Iterations = 9,999,999
-≈ 4.012 cycles per call
+Δcycles ≈ 54.270.085 - 14.141.612 = 40.128.473 
+TotalIterations = 9,999,999
+ 4.012 ≈ cycles-per-call
 ```
 
 That lands right in what: [Agner Fog
@@ -139,24 +140,30 @@ says:](https://www.agner.org/optimize/optimizing_cpp.pdf)
 and back again. This may take up to 4 clock cycles.
 
 Well, i think we have a clear and basic understanding what is our problem. And
-here comes most asked question: **"If inline is such a wonderfull optimization tool
+here comes most asked question: **"If inline is such a wonderful optimization tool
 why do not we just make every function inline?** The answer is simple and you
-probably know that: **it us just a hint**. Compiler is absolutely free to ignore
-it. And some cases it wont care at all such as:
+probably know that: **it is just a hint**. Compiler is absolutely free to ignore
+it. And most of the time, it does not need your help. If you check the above example,
+if you remove inline from sum function, the compiler will inline it anyway.
+
+And some cases it wont care at all such as:
 
 - Recursive functions
 - Virtual functions
 - When the function is too big. i know, i know, you are asking, "what is the
-  big?" But believe me, i have no idea. Its completely compiler depented.
+  big?" But believe me, i have no idea. Its completely compiler dependent.
 - If multiple inline are nested. Ex: inline Foo call inline Far, and inline
   Far calls inline Tar, etc. There are depth limits in such cases.
 
-Well, of course every compiler have some different behave for this cases. And
-no one, not me, not Herb Sutter, not anyone can give a full guarantee. But that
-does not mean, our inline keyword is meaningless. That would be completely
-wrong. For compilers it still has meaning. I read a great article by [Sy
+Well, of course every compiler have some different behavior for this cases. And
+no one, not me, not Herb Sutter, not anyone can give a full guarantee. 
+
+Then comes the second most asked question: **"So, inline keyword is useless,
+compiler is free to ignore it, why should i use it?"** No our inline keyword is
+not meaningless. That would be completely wrong. For compilers (i'm talking
+about Clang) it still has meaning. I read a great article by [Sy
 Brand](https://tartanllama.xyz/posts/inline-hints/), and you really should
-check it. In a nutshell:
+check it. There is a code snippet from clang and in something like this:
 
 ```cpp
  // Adjust the threshold based on inlinehint attribute and profile based
@@ -210,8 +217,8 @@ check it. In a nutshell:
     }
 ```
 
-So, the part I shared is bit different from what Sy Brand showed. LLVM's logic
-keeps growing. There are now extra checks for callsite hotness/coldness but I
+So, the part I shared is bit different from what **Sy Brand** showed. LLVM's logic
+keeps growing, there are now extra checks for callsite hotness/coldness but I
 am not the right person to unpack all these cool things. What matters here is
 that Clang still looking for your inline keyword,right here:
 
@@ -220,15 +227,16 @@ that Clang still looking for your inline keyword,right here:
       Threshold = MaxIfValid(Threshold, Params.HintThreshold);
 ```
 
-And and and, i want to show another cool trick that i saw from Jason Turner.
-Open Compiler Explorer and enable the Optimization Remarks panel.I created a
-simple sum function and here's wjat it showed:
+This means that if you add inline to your function, Clang will increase the
+threshold for inlining it.And, and, and, i want to show another cool trick that
+i saw from **Jason Turner**. Open Compiler Explorer and enable the Optimization
+Remarks panel.I created a simple sum function and here's what it showed:
 
 ![Screenshot](https://github.com/alitokur/alitokur.github.io/blob/master/src/inline-or-not/ss/noinline.png?raw=true)
 
-See you that this tiny,smol, cost and threshold. It says that my function cost
+Look at this tiny, smol, cost and threshold. It says that my function cost
 is 35, and the calculated threshold for it just 337. We are well below that
-limit so it says:, "no worries frinend, i inlined it for you". Then i added the
+limit so it says:, "no worries friend, i inlined it for you". Then i added the
 **inline** keyword to my sum function.
 
 Here is the result:
@@ -237,9 +245,9 @@ Here is the result:
 
 
 Can you see that? Cost is same(as expected). But the threshold changed. Holy
-Bjorn! This is how inline can affect the optimixer. Clang gives us a subtle but
+Bjorn! This is how inline can affect the optimizer. Clang gives us a subtle but
 real advantage here. The all arguments claim that "inline has no effect on
-compilers" is just wrong. We can cleary say that it reacts to compiler
+compilers" is just wrong. We can clearly say that it reacts to compiler
 optimizations, even if slightly.
 
 
@@ -248,8 +256,9 @@ Just because we can influence the compiler, does that mean we should use inline?
 You are welcome to new war. This is between inliners and non-inliners. You
 can pick your side after this article. 
 
-I want to share two different opinions from experts. First one is from
-C++ Core guideline:
+I want to share two different opinions from experts. First one is from [C++
+Core
+guideline](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#f5-if-a-function-is-very-small-and-time-critical-declare-it-inline):
 
 > Some optimizers are good at inlining without hints from the programmer, 
 but don’t rely on it. Measure! Over the last 40 years or so, we have been
@@ -261,7 +270,7 @@ do a better job.
 Yes, the final advice is to measure, but there’s a hint of skepticism here — as
 if even the experts feel that compilers aren’t always nailing it yet.
 
-And also cppreference says:
+And also [cppreference](https://en.cppreference.com/w/c/language/inline.html) says:
 
 > The intent of the inline specifier is to serve as a hint for the compiler to 
 perform optimizations, such as function inlining, which usually require the
@@ -277,33 +286,38 @@ The other one is coming from Agner Fog, in his optimization manuals, also
 discusses inlining and he says:
 
 > A function is usually inlined if the inline keyword is used or
-if its body is defined inside a class definition. Inlining a function is advantageous if the
+if it's body is defined inside a class definition. Inlining a function is advantageous if the
 function is small or if it is called only from one place in the program. Small
 functions are often inlined automatically by the compiler. On the other hand,
 the compiler may in some cases ignore a request for inlining a function if the
 inlining causes technical problems or performance problems.
 
-As i said before: The first argument is really arguable. As i show before
-compiler have some calculations and adding inline keyword not always will help
-you. And this small function threshold is completely compiler dependent.
+As i said before, the first argument is really  debatable. As i showed before,
+the compiler performs calculations, and adding the inline keyword will not
+always. And threshold for small function is completely compiler dependent.
 
-Here is my rock star Jason Turner's opinion. If you watch this video, [Jason
-Turner](https://www.youtube.com/watch?v=GldFtXZkgYo) says dont use inline for
-performance. Do not see inline as a performance tool. It's mainly linkage
-tool. Because compiler, made all kind of calculations eithout your input at
-all, and there is a good change that by modify this threshold you are actually
-doing something that will perform worse. The compiler has a pretty good reason
-for why it set the threshold this value. So they say its something that you
-should pretty much rely on you almost certaily dontw want to mess with this. 
+Here is my rock star, [Jason
+Turner](https://www.youtube.com/watch?v=GldFtXZkgYo) says do not use inline for
+performance and do not see inline as a performance tool. It's mainly a linkage
+tool. The compiler already makes all kinds of calculations without your input,
+and all, and there is a change that by modifying this threshold, you might
+actually make make performance worse. The compiler has a pretty good reason for
+setting the threshold to this value. So they say its something you rely on, you
+almost certainly do not want to mess with it. 
 
-As i shared above, Sy Brand's article and the answer of most question in
-stackoverflow and reddit strongly suggest the measuments before deciding. And i
-think its the best way to keep balence between these two sides.
+As i shared above, Sy Brand's article and most of the answers on SO and Reddit
+strongly suggest making measurements before deciding. I think think its the
+best way to keep yourself from bias.
 
-**And my final thought**: I strongly believe that inline keyword is powerfull tool
-but i dont use it so much. I think deciding to use inline or not is not easy at
-first sight. So i start with no inline usage, and when i find a bottleneck in
-my code, i try to inline that and then measure. I have spoken.
+**And Baba has some practices**: I use inline functions when i write code at
+my company. Because it's a must if you are working in HFT world. But for all
+my personal projects, I do not use inline that much. That is not because I do
+not like it. I believe that they are useful. However, the criteria for
+determinining whether a function should be inlined can be complex and subtle.
+So i start with no inline, and when i find a bottleneck in my code, i try
+inlining it and then measure.
+
+I have spoken.
 
 
 ### Sources and further reading:
