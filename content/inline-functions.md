@@ -18,10 +18,10 @@ discuss. By the end of the night, when the first light of dawn hits the screen,
 we'll make our choice: **should we use inline or not in C++?**
 
 And please, please, please, do not forget, i'm not an expert, and writing all
-this for you is also a way for me to learn. So, if you find any mistakes, call
-me and i can kick your *ss.
+this for you is also a way for me to learn. So, if you find any mistakes, let 
+me know.
 
-Okey, here we go. If you are here, you probably done all your search about
+Here we go. If you are here, you probably done all your search about
 inlining, stackoverflow, chatgpt, reddit... and already know what **inline**
 functions are. Btw, we are focusing on the performance aspect of it, not
 linkage. So let me give you just a tiny reminder: when we declare a function as
