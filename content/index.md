@@ -21,7 +21,7 @@ i design and build low-latency trading systems -- no knight capital vibes.
 
 2025-11-01 :: [[order-book | The Order Book (work-in-progress) ]]
 
-
+2026-08-02 :: [[allocator | The std one (work-in-progress) ]]
 
 #### links
 
