@@ -8,4 +8,8 @@ tsconfig.tsbuildinfo
 private/
 .replit
 replit.nix
-src/*.out
+
+# C/C++ build output
+*.out
+*.o
+*.a
