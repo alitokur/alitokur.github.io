@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <iterator>
 #include <vector>
@@ -15,55 +16,28 @@ struct order
 class PoolAllocator
 {
 public:
-    PoolAllocator(size_t pool_size) : pool(pool_size, { order(), true })
+    PoolAllocator(size_t pool_size) : pool(pool_size)
     {
-        std::cout << "creating pool with size: " << pool_size << std::endl;
-        for (int i = 0; i < pool.size(); i++)
-        {
-            // std::printf("the address of pool object [%d] -> %p \n", i, (void*)&pool[i].obj);
-        }
+
     }
 
     order* allocate(int a, int b)
     {
-        auto& slot = pool[next_free_node_];
-        auto* o = &slot.obj;
-        o = new (o) order(a, b);
-        slot.is_free_ = false;
-        update_next_free_index();
-        return o;
     }
 
     void deallocate(order* o)
     {
-        auto index = reinterpret_cast<object*>(o) - &pool[0];
-        pool[index].is_free_ = true;
     }
 
 private:
     struct object
     {
         order obj;
-        bool is_free_ = true;
+        object* next = nullptr;
     };
+    object* _free_head = nullptr;
     std::vector<object> pool;
-    size_t next_free_node_ = 0;
-    void update_next_free_index()
-    {
-        /// TODO: use free list
-        auto curr = next_free_node_;
-        while (!pool[next_free_node_].is_free_)
-        {
-            next_free_node_++;
-            if (next_free_node_ == pool.size())
-                next_free_node_ = 0;
-            if (next_free_node_ == curr)
-            {
-                std::cout << " warning: pool is full!" << std::endl;
-                std::exit(1);
-            }
-        }
-    }
+
 };
 
 class RawAllocator

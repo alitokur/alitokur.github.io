@@ -93,32 +93,106 @@ Pool allocator or a.k.a memory pool.
 Im starting with a basic one. Not so fancy but it would be great to start. 
 And then we can optimize it.
 
+Here is my simple order struct. It just keeps order price and quantity.
 
 ```cpp
+struct order
+{
+    int32_t price;
+    int32_t qty;
 
-template <typename T>
-class PoolAllocator(){
-public:
-explicit MemPool(std::size_t n_elems):
-store_(num_elems, {T(), true}){
-
-}
-
-private:
-
-struct ObjectBlock(){
-T object_;
-bool is_free_ true;
+    order() = default;
+    order(int x, int y) : price(x), qty(y) {}
 };
-
-std::vector<ObjectBlock> store_;
-size_t next_free_index_ = 0;
-
-}
 
 ```
 
+And here is the allocator class. Not template. I hate templates. I ll make it template later. 
 
+```cpp
+
+private:
+    struct object
+    {
+        order obj;
+        bool is_free_ = true;
+    };
+    std::vector<object> pool;
+    size_t next_free_node_ = 0;
+
+public:
+    PoolAllocator(size_t pool_size) : pool(pool_size, { order(), true })
+    {
+        std::cout << "creating pool with size: " << pool_size << std::endl;
+        for (int i = 0; i < pool.size(); i++)
+        {
+            std::printf("the address of pool object [%d] -> %p \n", i, (void*)&pool[i].obj);
+        }
+    }
+    
+```
+
+Like the other codes, i keep allocate function simple. It just use next free slot. And calling 
+in place new to construct the object.
+
+```cpp
+    order* allocate(int a, int b)
+    {
+        auto& slot = pool[next_free_node_];
+        auto* o = &slot.obj;
+        o = new (o) order(a, b);
+        slot.is_free_ = false;
+        update_next_free_index();
+        return o;
+    }
+    
+    void update_next_free_index()
+    {
+        /// TODO: use free list
+        auto curr = next_free_node_;
+        while (!pool[next_free_node_].is_free_)
+        {
+            next_free_node_++;
+            if (next_free_node_ == pool.size())
+                next_free_node_ = 0;
+            if (next_free_node_ == curr)
+            {
+                std::cout << " warning: pool is full!" << std::endl;
+                std::exit(1);
+            }
+        }
+    }
+
+    void deallocate(order* o) {
+        auto index =  reinterpret_cast<object*>(o) - &pool[0];
+        pool[index].is_free_ = true;
+    }
+```
+
+And there is just pointer aritmetic trick for deallocation. I'm using reinterpret_cast for only 
+to be seem cool.
+
+```cpp
+    void deallocate(order* o) {
+        auto index =  reinterpret_cast<object*>(o) - &pool[0];
+        pool[index].is_free_ = true;
+    }
+```
+
+And first results:
+
+```sh
+creating pool with size: 5000000
+testing wiht pool
+time: 5.86106
+testing wiht new/delete
+time: 20.0248
+```
+
+Bu kadar ilkel bir pool ile bile neredeyse 5x improvement. Ve arkasindaki  tek basit fikir
+initial bir allocation. Bununla birlikte ilk allocatorimizi yazmis olduk. Dedigim gibi
+bu pool cok ilkel ve bir cok noktada gelistirmeye musait. Biraz teorik seylerden bahsetmeden once 
+isterseniz bazi ufak improvementleri da yapalim.
 
 
 
